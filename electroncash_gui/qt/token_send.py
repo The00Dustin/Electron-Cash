@@ -971,12 +971,12 @@ class SendTokenForm(WindowModalDialog, PrintError, OnDestroyedMixin):
         # Quirk: We don't choose token utxos for contributing to BCH amount unless the token was selected for
         # sending by the user in the UI. So only consider BCH amounts > 800 sats for tokens chosen for this tx
         # by the user's NFT/FT selections in the UI.
-        max_in += sum(x['value'] - dust_token for x in tx.inputs() if x['token_data'] and x['value'] > dust_token)
+        max_in += sum(x['value'] for x in tx.inputs() if x['token_data'])
 
         val_out_minus_change = 0
         for (_, addr, val), td in tx.outputs(tokens=True):
-            if td or addr != spec.change_addr:
-                val_out_minus_change += val
+            if td or addr == spec.change_addr:
+                val_out_minus_change += dust_token
         bytes = tx.serialize_bytes(estimate_size=True)
         max_amount = max(0, max_in - val_out_minus_change - int(math.ceil(len(bytes)/1000 * spec.feerate)))
         return max_amount
