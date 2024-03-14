@@ -980,8 +980,8 @@ class SendTokenForm(WindowModalDialog, PrintError, OnDestroyedMixin):
         bytes = len(tx.serialize_bytes(estimate_size=True))
         # Dummy transaction for estimating size uses 141 bytes for single non-token input.  Add 141 bytes for
         # each additional available non-token input.
-        extrainputs = (len(spec.non_token_utxos) - 1) * 141
-        bytes += extrainputs
+        extrainputbytes = (len(spec.non_token_utxos) - 1) * 141
+        bytes += extrainputbytes
         max_amount = max(0, max_in - token_output_dust - int(math.ceil(bytes/1000 * spec.feerate)))
         return max_amount
 
