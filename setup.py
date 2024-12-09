@@ -27,8 +27,8 @@ def load_source(module_name, module_path):
 
 version = load_source('version', 'electroncash/version.py')
 
-if sys.version_info[:3] < (3, 7):
-    sys.exit("Error: Electron Cash requires Python version >= 3.7...")
+if sys.version_info[:3] < (3, 8):
+    sys.exit("Error: Electron Cash requires Python version >= 3.8...")
 
 data_files = []
 
@@ -64,7 +64,7 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
         # Menu icon
         (os.path.join(share_dir, 'icons/hicolor/256x256/apps/'),   ['icons/electron-cash.png']),
         (os.path.join(share_dir, 'pixmaps/'),                      ['icons/electron-cash.png']),
-        (os.path.join(share_dir, 'icons/hicolor/scaleable/apps/'), ['icons/electron-cash.svg']),
+        (os.path.join(share_dir, 'icons/hicolor/scalable/apps/'),  ['icons/electron-cash.svg']),
         # Menu entry
         (os.path.join(share_dir, 'applications/'), ['electron-cash.desktop']),
         # App stream (store) metadata

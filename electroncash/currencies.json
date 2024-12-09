@@ -568,5 +568,17 @@
     ],
     "BitstampYadio": [
     "ARS"
+    ],
+     "YahooFinance": [
+    "AUD",
+    "CAD",
+    "CNY",
+    "EUR",
+    "GBP",
+    "INR",
+    "KRW",
+    "JPY",
+    "RUB",
+    "USD"
     ]
 }
