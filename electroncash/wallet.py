@@ -107,12 +107,21 @@ def relayfee(network):
     return min(f, MAX_RELAY_FEE)
 
 
-def dust_threshold(network):
+def dust_threshold(network, *, script_bytes=25):
     # Change < dust threshold is added to the tx fee
     #return 182 * 3 * relayfee(network) / 1000 # original Electrum logic
     #return 1 # <-- was this value until late Sept. 2018
-    return 546  # hard-coded Bitcoin Cash dust threshold. Was changed to this as of Sept. 2018
-
+    #return 546  # hard-coded Bitcoin Cash dust threshold. Was changed to this as of Sept. 2018
+    # enhance the original Electrun logic to account for scripts / tokens
+    value_bytes = 8 # bytes used in output for value for all current tx versions as of VMLA
+    if script_bytes < 253:
+        length_bytes = 1
+    else:
+        length_bytes = 3
+    output_size = value_bytes + length_bytes + script_bytes
+    # 148 bytes covers all bytes but the actual output of the next tx (to P2PKH) for dust limit purposes
+    # we don't need relayfee/1000 until/unless relay fees vary
+    return (148 + output_size) * 3
 
 def sweep_preparations(privkeys, network, imax=100):
     class InputsMaxxed(Exception):
