@@ -74,7 +74,7 @@ class OutputData:
     def to_ui_string(self) -> dict:
         return {
             "id": self.id_hex,
-            "bitfield": self.bitfeild,
+            "bitfield": self.bitfield,
             "amount": self.amount,
             "commitment": self.commitment.hex() if self.commitment else ""
         }

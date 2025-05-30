@@ -38,6 +38,7 @@ from functools import wraps
 
 from . import bitcoin
 from . import rpa
+from . import token
 from . import token_meta
 from . import util
 from .address import Address, AddressError
@@ -160,11 +161,11 @@ class Commands:
             def ChkList(l):
                 for i in range(0,len(l)): l[i] = DoChk(l[i]) # recurse
                 return l
-            def EncodeNamedTupleObject(nt):
+            def EncodeObject(nt):
                 if hasattr(nt, 'to_ui_string'): return nt.to_ui_string()
                 return nt
 
-            if isinstance(v, tuple): v = EncodeNamedTupleObject(v)
+            if isinstance(v, (tuple, token.OutputData)): v = EncodeObject(v)
             elif isinstance(v, list): v = ChkList(v) # may recurse
             elif isinstance(v, dict): v = Commands._EnsureDictNamedTuplesAreJSONSafe(v) # recurse
             return v
