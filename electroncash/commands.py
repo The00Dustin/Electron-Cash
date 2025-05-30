@@ -393,105 +393,45 @@ class Commands:
         Inputs must have a redeemPubkey.
         Outputs must be a list of {'address':address, 'value':satoshi_amount}.
         """
-
-        if not isinstance(jsontx, dict):
-            raise BaseException("Expected JSON dictionary")
-
         keypairs = {}
         inputs = jsontx.get('inputs')
         outputs = jsontx.get('outputs')
         locktime = jsontx.get('locktime', jsontx.get('lockTime', 0))
         version = jsontx.get('version', 1)
-
-        if not isinstance(inputs, list) or not isinstance(outputs, list):
-            raise BaseException("Inputs and outputs must be lists")
-
-        inputs_list = []
         for txin in inputs:
-            if not isinstance(txin, dict):
-                raise BaseException(f"Invalid input: {txin}")
-            input_dict = {}
             if txin.get('output'):
                 prevout_hash, prevout_n = txin['output'].split(':')
-                input_dict['prevout_n'] = int(prevout_n)
-                input_dict['prevout_hash'] = prevout_hash
-            else:
-                input_dict['prevout_n'] = txin.get('prevout_n')
-                input_dict['prevout_hash'] = txin.get('prevout_hash')
-            if not input_dict['prevout_hash'] or not isinstance(input_dict['prevout_n'], int):
-                raise BaseException(f"Invalid input prevout: {txin}")
-
-            input_dict['sequence'] = txin.get('sequence', 0xffffffff - 1)
-            input_dict['type'] = txin.get('type')
-            input_dict['address'] = Address.from_string(txin['address']) if txin.get('address') else None
-            input_dict['value'] = txin.get('value')
-            input_dict['x_pubkeys'] = txin.get('x_pubkeys', [])
-            input_dict['pubkeys'] = txin.get('pubkeys', [])
-            input_dict['signatures'] = txin.get('signatures', [])
-            input_dict['num_sig'] = txin.get('num_sig', 0)
-
+                txin['prevout_n'] = int(prevout_n)
+                txin['prevout_hash'] = prevout_hash
             sec = txin.get('privkey')
             if sec:
                 txin_type, privkey, compressed = bitcoin.deserialize_privkey(sec)
                 pubkey = bitcoin.public_key_from_private_key(privkey, compressed)
                 keypairs[pubkey] = privkey, compressed
-                input_dict['type'] = txin_type
-                input_dict['x_pubkeys'] = [pubkey]
-                input_dict['signatures'] = [None]
-                input_dict['num_sig'] = 1
-
-            inputs_list.append(input_dict)
+                txin['type'] = txin_type
+                txin['x_pubkeys'] = [pubkey]
+                txin['signatures'] = [None]
+                txin['num_sig'] = 1
 
         outputs_list = []
         token_datas = []
         for o in outputs:
-            if not isinstance(o, dict):
-                raise BaseException(f"Involid output: {o}")
-            if 'address' not in o or 'value' not in o:
-                raise BaseException(f"Output  missing address or value: {o}")
-
-            try:
-                addr = Address.from_string(o['address'])
-                value = int(o['value'])
-            except Exception as e:
-                raise BaseException(f"Invalid address or value in output {o}: {e}")
-
+            addr = Address.from_string(o['address'])
+            value = int(o['value'])
             output_type = o.get('type', TYPE_ADDRESS)
-            if not isinstance(output_type, int):
-                output_type = TYPE_ADDRESS
-
             outputs_list.append((output_type, addr, value))
-
             token_data = o.get('token_data')
             if isinstance(token_data, dict):
-                print(f"Processing output: {o}")
-                print(f"Token data: {token_data}")
-                if not all(k in token_data for k in ('id', 'bitfield', 'amount', 'commitment')):
-                    raise ValueError("Missing required token_data fields")
-                if not isinstance(token_data['id'], str) or not isinstance(token_data['bitfield'], int) or not isinstance(token_data['amount'], int):
-                    raise ValueError("Invalid token_data field types")
-                token_id = bytes.fromhex(token_data['id'])
-                if len(token_id) != 32:
-                    raise ValueError("Token ID must be 32 bytes")
-                print(f"Token ID bytes: {token_id}")
-                commitment = bytes.fromhex(token_data['commitment']) if token_data['commitment'] else b''
-                print(f"Commitment: {commitment}")
-                try:
-                    token_datas.append(token.OutputData(
-                        id=token_id,
-                        bitfield=token_data['bitfield'],
-                        amount=token_data['amount'],
-                        commitment=commitment
-                ))
-                except Exception as e:
-                    raise BaseException(f"Failed to create OutputData for {token_data}: {e}")
+                token_datas.append(token.OutputData(
+                    id=bytes.fromhex(token_data['id'])[::-1],
+                    bitfield=token_data['bitfield'],
+                    amount=token_data['amount'],
+                    commitment=bytes.fromhex(token_data['commitment']) if token_data['commitment'] else b''
+            ))
             else:
                 token_datas.append(None)
 
-        tx = Transaction.from_io(inputs, outputs, locktime=locktime, version=version, sign_schnorr=self.wallet and self.wallet.is_schnorr_enabled())
-        print(f"Transaction inputs: {tx.inputs_list()}")
-        print(f"Transaction outputs: {tx.outputs_list()}")
-        print(f"Transaction token_datas: {tx.token_datas()}")
+        tx = Transaction.from_io(inputs, outputs_list, locktime=locktime, version=version, token_datas=token_datas, sign_schnorr=self.wallet and self.wallet.is_schnorr_enabled())
         tx.sign(keypairs)
         return tx.as_dict()
 
