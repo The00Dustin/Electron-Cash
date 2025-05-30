@@ -396,8 +396,7 @@ class Commands:
         keypairs = {}
         inputs = jsontx.get('inputs')
         outputs = jsontx.get('outputs')
-        locktime = jsontx.get('locktime', 0)
-        locktime = jsontx.get('lockTime', locktime)
+        locktime = jsontx.get('locktime', jsontx.get('lockTime', 0))
         version = jsontx.get('version', 1)
         for txin in inputs:
             if txin.get('output'):
@@ -414,8 +413,25 @@ class Commands:
                 txin['signatures'] = [None]
                 txin['num_sig'] = 1
 
-        outputs = [(TYPE_ADDRESS, Address.from_string(x['address']), int(x['value'])) for x in outputs]
-        tx = Transaction.from_io(inputs, outputs, locktime=locktime, version=version, sign_schnorr=self.wallet and self.wallet.is_schnorr_enabled())
+        outputs_list = []
+        token_datas = []
+        for o in outputs:
+            addr = Address.from_string(o['address'])
+            value = int(o['value'])
+            output_type = o.get('type', TYPE_ADDRESS)
+            outputs_list.append((output_type, addr, value))
+            token_data = o.get('token_data')
+            if isinstance(token_data, dict):
+                token_datas.append(token.OutputData(
+                    id=bytes.fromhex(token_data['id'])[::-1],
+                    bitfield=token_data['bitfield'],
+                    amount=token_data['amount'],
+                    commitment=bytes.fromhex(token_data['commitment']) if token_data['commitment'] else b''
+            ))
+            else:
+                token_datas.append(None)
+
+        tx = Transaction.from_io(inputs, outputs_list, locktime=locktime, version=version, token_datas=token_datas, sign_schnorr=self.wallet and self.wallet.is_schnorr_enabled())
         tx.sign(keypairs)
         return tx.as_dict()
 
