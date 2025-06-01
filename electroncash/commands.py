@@ -396,6 +396,15 @@ class Commands:
         keypairs = {}
         inputs = jsontx.get('inputs')
         outputs = jsontx.get('outputs')
+        for txin in inputs:
+            token_data = txin.get('token_data')
+            if isinstance(token_data, dict):
+                txin['token_data'] = token.OutputData(
+                    id=bytes.fromhex(token_data['id'])[::-1],
+                    bitfield=token_data['bitfield'],
+                    amount=token_data['amount'],
+                    commitment=bytes.fromhex(token_data['commitment']) if token_data['commitment'] else b''
+                )
         locktime = jsontx.get('locktime', jsontx.get('lockTime', 0))
         version = jsontx.get('version', 1)
         for txin in inputs:
