@@ -436,7 +436,7 @@ class Commands:
                     bitfield=token_data['bitfield'],
                     amount=token_data['amount'],
                     commitment=bytes.fromhex(token_data['commitment']) if token_data['commitment'] else b''
-            ))
+                ))
             else:
                 token_datas.append(None)
 
