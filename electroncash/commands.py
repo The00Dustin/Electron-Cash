@@ -424,12 +424,12 @@ class Commands:
 
         outputs_list = []
         token_datas = []
-        for o in outputs:
-            addr = Address.from_string(o['address'])
-            value = int(o['value'])
-            output_type = o.get('type', TYPE_ADDRESS)
+        for txout in outputs:
+            addr = Address.from_string(txout['address'])
+            value = int(txout['value'])
+            output_type = txout.get('type', TYPE_ADDRESS)
             outputs_list.append((output_type, addr, value))
-            token_data = o.get('token_data')
+            token_data = txout.get('token_data')
             if isinstance(token_data, dict):
                 token_datas.append(token.OutputData(
                     id=bytes.fromhex(token_data['id'])[::-1],
