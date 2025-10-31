@@ -403,7 +403,7 @@ class Commands:
                     id=bytes.fromhex(token_data['id'])[::-1],
                     bitfield=token_data['bitfield'],
                     amount=token_data['amount'],
-                    commitment=bytes.fromhex(token_data['commitment']) if token_data['commitment'] else b''
+                    commitment=bytes.fromhex(token_data['commitment'] or '')
                 )
         locktime = jsontx.get('locktime', jsontx.get('lockTime', 0))
         version = jsontx.get('version', 1)
