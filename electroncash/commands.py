@@ -382,8 +382,16 @@ class Commands:
         return l
 
     @command('n')
+    def getaddresstokens(self, address):
+        """Returns the token UTXO list of any address. Note: This
+        is a walletless server query, results are not checked by SPV.
+        """
+        sh = Address.from_string(address).to_scripthash_hex()
+        return self.network.synchronous_get(('blockchain.scripthash.listunspent', [sh, "include_tokens"]))
+
+    @command('n')
     def getaddressunspent(self, address):
-        """Returns the UTXO list of any address. Note: This
+        """Returns the non-token UTXO list of any address. Note: This
         is a walletless server query, results are not checked by SPV.
         """
         sh = Address.from_string(address).to_scripthash_hex()
