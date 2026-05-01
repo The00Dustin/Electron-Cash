@@ -107,12 +107,23 @@ def relayfee(network):
     return min(f, MAX_RELAY_FEE)
 
 
-def dust_threshold(network):
-    # Change < dust threshold is added to the tx fee
-    #return 182 * 3 * relayfee(network) / 1000 # original Electrum logic
-    #return 1 # <-- was this value until late Sept. 2018
-    return 546  # hard-coded Bitcoin Cash dust threshold. Was changed to this as of Sept. 2018
-
+def dust_threshold(network, *, script_bytes=25, output_bytes=None):
+    """To calculate the dust threshold for BCH and cashtoken UTXOs alike, various variables can be used.
+    This implementation is using a default of 25 bytes for the output script (P2PKH).
+    Alternatviely, the size of the serialized output can be used (34 bytes for P2PKH).
+    Other variables could likely be programmed as well, but this seems like a good starting point.
+    Hard-coded 148 covers all bytes but the actual output of the next tx for dust limit purposes,
+    other variables are named for easy adjustment in the case of future changes.
+    We don't need to reimplement *relayfee/1000 until/unless relay fees vary."""
+    if output_bytes is None:
+        value_bytes = 8
+        if script_bytes < 253:
+            length_bytes = 1
+        else:
+            # this can only be reached in the case of a non-standard transaction
+            length_bytes = 3
+        output_bytes = value_bytes + length_bytes + script_bytes
+    return (148 + output_bytes) * 3
 
 def sweep_preparations(privkeys, network, imax=100):
     class InputsMaxxed(Exception):
@@ -2982,7 +2993,7 @@ class Abstract_Wallet(PrintError, SPVDelegate):
 
 
         # Setup outputs
-        token_dust = token.heuristic_dust_limit_for_token_bearing_output()  # 800 sats
+        token_dust = token.heuristic_dust_limit_for_token_bearing_output()
         outputs: List[Tuple[int, Address, Union[int, str]]]
         outputs = [(TYPE_ADDRESS, spec.payto_addr, token_dust)] * len(tds_out)
         tds_satoshis = []
