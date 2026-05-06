@@ -642,7 +642,6 @@ class CreateTokenForm(QtWidgets.QWidget, MessageBoxMixin, PrintError, OnDestroye
         Returns True if there was a change, False otherwise."""
 
         # Try and guess the worst-case value we need on a single utxo for creating a new token.
-        # min_val: roughly 800 + 310 byte txn -> 1310 sats.
         min_val = token.heuristic_dust_limit_for_longest_possible_token_bearing_p2pkh_output() + self.est_tx_fee()
         min_val_other = token.heuristic_dust_limit_for_longest_possible_token_bearing_p2pkh_output() + self.est_tx_fee(200) * 2
         utxos = []
