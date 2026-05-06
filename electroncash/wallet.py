@@ -120,7 +120,6 @@ def dust_threshold(network, *, script_byte_len=25, output_byte_len=None):
         if script_byte_len < 253:
             length_byte_len = 1
         else:
-            # this can only be reached in the case of a non-standard transaction
             length_byte_len = 3
         output_byte_len = value_byte_len + length_byte_len + script_byte_len
     return (148 + output_byte_len) * 3
