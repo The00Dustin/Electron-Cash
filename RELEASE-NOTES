@@ -1552,3 +1552,12 @@ RELEASE NOTES 4.4.4
 - Disable last unchecked item in MyTreeWidget header action menu to prevent the header from disappearing (OPReturnCode)
 - Headers & SPV: fix CVE-2012-2459 in merkle proof verification (#3202) (bitcoincashautist)
 - blockchain: skip loading orphaned fork files on startup (#3211) (bitcoincashautist)
+
+RELEASE NOTES 4.4.5
+
+- CLI: added --tokens_only and --exclude_tokens as options for `getaddressbalance` and `getaddressunspent`
+  (#3156) (The00Dustin)
+- Modify dust_threshold() to allow calculation for non-P2PKH and cashtoken UTXOs (#3072) (The00Dustin)
+- CLI: Fixed cashtoken deserialization and serialization for serialize/deserialize tx RPCs (#3078) (The00Dustin)
+- Update for latest May 2026 upgrade + fix some long-standing Cash Token "dust" limit issues (#3218) (cculianu)
+- Remove some stale code comments (#3220) (The00Dustin)
