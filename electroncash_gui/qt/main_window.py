@@ -166,6 +166,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.require_fee_update = False
         self.cashaddr_toggled_signal = self.gui_object.cashaddr_toggled_signal  # alias for backwards compatibility for plugins -- this signal used to live in each window and has since been refactored to gui-object where it belongs (since it's really an app-global setting)
         self.force_use_single_change_addr = None  # this is set by the CashShuffle plugin to a single string that will go into the tool-tip explaining why this preference option is disabled (see self.settings_dialog)
+        self.qr_use_token_address = False  # Ensure this property is defined  (used by some code paths), see issue #1788
         self.tl_windows = []
         self.tx_external_keypairs = {}
         self._tx_dialogs = Weak.Set()
@@ -1433,7 +1434,6 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             vbox2.setAlignment(but, Qt.AlignHCenter | Qt.AlignVCenter)
             vbox2.setAlignment(qr_addr_format_toggle, Qt.AlignHCenter | Qt.AlignVCenter)
             hbox.addLayout(vbox2)
-
 
         class ReceiveTab(QWidget):
             def showEvent(slf, e):
