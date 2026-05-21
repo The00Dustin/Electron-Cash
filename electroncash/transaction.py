@@ -1102,6 +1102,9 @@ class Transaction:
         t = None
         cls = __class__
         self_txid = self.txid()
+        # We need to take a copy of self._inputs since it *may* be modified by other threads during this process.
+        # See: https://github.com/Electron-Cash/Electron-Cash/issues/3229
+        self_inputs = deepcopy(self._inputs)
         def doIt():
             """
             This function is seemingly complex, but it's really conceptually
@@ -1125,9 +1128,9 @@ class Transaction:
                     if prog - last_prog > 5.0:
                         prog_callback(prog)
                         last_prog = prog
-            while eph.get('_fetch') == t and len(inps) < len(self._inputs):
+            while eph.get('_fetch') == t and len(inps) < len(self_inputs):
                 i = len(inps)
-                inp = deepcopy(self._inputs[i])
+                inp = deepcopy(self_inputs[i])
                 typ, prevout_hash, n, addr, value = inp.get('type'), inp.get('prevout_hash'), inp.get('prevout_n'), inp.get('address'), inp.get('value')
                 if not prevout_hash or n is None:
                     raise RuntimeError('Missing prevout_hash and/or prevout_n')
@@ -1292,7 +1295,7 @@ class Transaction:
                     # crucial on error/timeout/failure.
                     for func in callback_funcs_to_cancel:
                         wallet.network.cancel_requests(func)
-            if len(inps) == len(self._inputs) and eph.get('_fetch') == t:  # sanity check
+            if len(inps) == len(self_inputs) and eph.get('_fetch') == t:  # sanity check
                 eph.pop('_fetch', None)  # potential race condition here, popping wrong t -- but in practice w/ CPython threading it won't matter
                 print_error(f"fetch_input_data: elapsed {(time.time()-t0):.4f} sec")
                 if done_callback:
