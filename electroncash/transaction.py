@@ -1038,14 +1038,14 @@ class Transaction:
     # memory consumption and UX.
     #
     # In even aggressive/pathological cases this cache won't ever exceed
-    # 100MB even when full. [see ExpiringCache.size_bytes() to test it].
+    # 180MB even when full. [see ExpiringCache.size_bytes() to test it].
     # This is acceptable considering this is Python + Qt and it eats memory
     # anyway.. and also this is 2019 ;). Note that all tx's in this cache
     # are in the non-deserialized state (hex encoded bytes only) as a memory
     # savings optimization.  Please maintain that invariant if you modify this
     # code, otherwise the cache may grow to 10x memory consumption if you
     # put deserialized tx's in here.
-    _fetched_tx_cache = ExpiringCache(maxlen=1000, name="TransactionFetchCache")
+    _fetched_tx_cache = ExpiringCache(maxlen=1800, name="TransactionFetchCache")
 
     def fetch_input_data(self, wallet, done_callback=None, done_args=tuple(),
                          prog_callback=None, *, force=False, use_network=True):
@@ -1117,7 +1117,11 @@ class Transaction:
 
             Tested with a huge tx of 600+ inputs all coming from different
             prevout_hashes on mainnet, and it's super fast:
-            cd8fcc8ad75267ff9ad314e770a66a9e871be7882b7c05a7e5271c46bfca98bc """
+                cd8fcc8ad75267ff9ad314e770a66a9e871be7882b7c05a7e5271c46bfca98bc
+
+            For testing, also try this txid which has 1735 inputs from different txns:
+                80fcb3e5028f58b3ca250de481c5af9fddc264ed811db0116c883c07c11cdb64
+            """
             last_prog = -9999.0
             need_dl_txids = defaultdict(list)  # the dict of txids we will need to download (wasn't in cache)
             def prog(i, prog_total=100):
